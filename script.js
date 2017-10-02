@@ -38,14 +38,40 @@ CatListModel.prototype.setCurrentCat = function(num){
 
 CatListModel.prototype.incrementCounter = function() {
 	this.cats[this.currentCat].incrementCounter();
-}
+};
 
 CatListModel.prototype.getCurrentCat = function(){
 	return this.cats[this.currentCat];
-}
+};
 
-var catList = new CatListModel();
-catList.init();
+//-----------------------------------------------------------------------------
+
+var octopus = {
+
+  	init: function(){
+		catList.init();
+		catView.init();
+		catListView.init();
+	},
+  
+  	incrementCounter: function(){
+        catList.incrementCounter();
+        catView.render();        
+  	},
+	
+	setCurrentCat: function(index){
+		catList.setCurrentCat(index);
+	 	catView.render();
+	},
+
+	getCurrentCat: function(){
+		return catList.getCurrentCat();
+	},
+
+	getCats: function(){
+		return catList.getCats();
+	}
+};
 
 //---------------------------------------------------------------
 //---------------------------------------------------------------------------
@@ -61,8 +87,7 @@ CatView.prototype.init = function(){
 
     // on click, increment the current cat's counter
     this.catImageElem.on('click', function(){
-        catList.incrementCounter();
-        catView.render();
+        octopus.incrementCounter();
     });
 
     this.render();
@@ -71,24 +96,16 @@ CatView.prototype.init = function(){
 
 //rander the view based on selected index
 CatView.prototype.render = function(){
-   	var currentCat = catList.getCurrentCat();
+   	var currentCat = octopus.getCurrentCat();
    	this.countElem.html(currentCat.clickCount);
    	this.catNameElem.html(currentCat.name);
    	this.catImageElem.attr('src', currentCat.imgsrc);
 };
 
-var catView = new CatView();
-catView.init();
-
-
-
-
-
 
 //---------------------------------------------------------------
-
-
 //View for the CatListView
+//---------------------------------------------------------------
 var CatListView = function(){
 };
 
@@ -99,7 +116,7 @@ CatListView.prototype.init = function(){
 
 CatListView.prototype.render = function(){
 	var cat, elem, i;
-	var cats = catList.getCats();
+	var cats = octopus.getCats();
 
 	for (i = 0; i < cats.length; i++) {
 		cat = cats[i];
@@ -109,8 +126,7 @@ CatListView.prototype.render = function(){
 
 		$li.on('click', (function(catCopy) {
 	    return function() {
-	      	catList.setCurrentCat(catCopy);
-	       	catView.render();
+	      	octopus.setCurrentCat(catCopy);
 	    	};
 		})(i));
 
@@ -118,7 +134,12 @@ CatListView.prototype.render = function(){
 	}
 };
 
-var catListView = new CatListView();
-catListView.init();
+//-------------------------------------------------------------------------------
+var catList = new CatListModel();
+var catView = new CatView();
+var catListView= new CatListView();
+
+
+octopus.init();
 
 
