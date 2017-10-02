@@ -9,6 +9,18 @@ Cat.prototype.getname = function(){
 	return this.name;
 };
 
+Cat.prototype.setCurrentCatName = function(str){
+	return this.name = str;
+};
+
+Cat.prototype.setImgSrc = function(src){
+	return this.imgsrc = src;
+};
+
+Cat.prototype.setClickCount = function(count){
+	return this.clickCount = count;
+};
+
 Cat.prototype.incrementCounter = function(){
 	this.clickCount++;
 };
@@ -16,6 +28,7 @@ Cat.prototype.incrementCounter = function(){
 //-----------------------------------------------------------------
 var CatListModel = function() {
 	this.currentCat = 0;
+    this.adminShow	= false;
 };
 
 CatListModel.prototype.init = function(){
@@ -36,12 +49,32 @@ CatListModel.prototype.setCurrentCat = function(num){
 	this.currentCat=num;
 };
 
+CatListModel.prototype.setCurrentCatName = function(str){
+	this.cats[this.currentCat].setCurrentCatName(str);
+};
+
+CatListModel.prototype.setClickCount = function(count){
+	this.cats[this.currentCat].setClickCount(count);
+};
+
+CatListModel.prototype.setImgSrc = function(src){
+	this.cats[this.currentCat].setImgSrc(src);
+};
+
 CatListModel.prototype.incrementCounter = function() {
 	this.cats[this.currentCat].incrementCounter();
 };
 
 CatListModel.prototype.getCurrentCat = function(){
 	return this.cats[this.currentCat];
+};
+
+CatListModel.prototype.getAdminShow = function(){
+	return this.adminShow;
+};
+
+CatListModel.prototype.setAdminShow = function(val){
+	this.adminShow = val;
 };
 
 //-----------------------------------------------------------------------------
@@ -70,7 +103,34 @@ var octopus = {
 
 	getCats: function(){
 		return catList.getCats();
-	}
+	},
+
+    //function runs when 'Admin' button is clicked.
+    adminDisplay: function(){
+        if (catList.getAdminShow() === false) {
+            catList.setAdminShow(true);
+            adminView.show(); //displays the admin input boxes and buttons
+        }
+        else if (catList.getAdminShow() === true) {
+            catList.setAdminShow(false);
+            adminView.hide(); //displays the admin input boxes and buttons
+        }
+    },
+    
+    //hides admin display when cancel button is clicked.
+    adminCancel: function(){
+        adminView.hide();
+    },
+    
+    //hides admin display and saves new cat data when save button is clicked.
+    adminSave: function(){
+        catList.setCurrentCatName(adminCatName.value);
+        catList.setClickCount(adminCatClicks.value);
+        catList.setImgSrc(adminCatURL.value);
+        catView.render();
+        catListView.render();
+        adminView.hide();
+    }
 };
 
 //---------------------------------------------------------------
@@ -117,6 +177,7 @@ CatListView.prototype.init = function(){
 CatListView.prototype.render = function(){
 	var cat, elem, i;
 	var cats = octopus.getCats();
+	this.catListElem.empty();
 
 	for (i = 0; i < cats.length; i++) {
 		cat = cats[i];
@@ -135,11 +196,56 @@ CatListView.prototype.render = function(){
 };
 
 //-------------------------------------------------------------------------------
+var adminView = {
+    init: function(){
+        this.adminCatName = $('.adminCatName');
+        this.adminCatURL = $('.adminCatURL');
+        this.adminCatClicks = $('.adminCatClicks');
+        var admin = $('#admin');
+        
+        this.adminBtn = $('#adminBtn');
+        this.adminCancel = $('#adminCancel');
+        this.adminSave = $('#adminSave');
+        
+        this.adminBtn.on('click', function(){ //shows the admin display.
+            octopus.adminDisplay();
+        });
+        
+        this.adminCancel.on('click', function(){ //hides the admin display without saving any new cat data.
+            octopus.adminCancel();
+        });
+        
+        this.adminSave.on('click', function(){ //hides the admin display and saves new cat data.
+            octopus.adminSave();
+        });
+        
+        this.render();
+    },
+    
+    render: function(){
+        var currentCat = octopus.getCurrentCat(); //calls current cat
+        this.adminCatName.value = currentCat.name;
+        this.adminCatURL.value = currentCat.imgSrc;
+        this.adminCatClicks.value = currentCat.clickCount;
+    },
+    
+    show: function(){
+            admin.style.display = 'block'; //shows the admin div on index.html
+        },
+        
+    hide: function(){
+        admin.style.display = 'none';
+    }
+};
+
+
+//-------------------------------------------------------------------------------
 var catList = new CatListModel();
 var catView = new CatView();
 var catListView= new CatListView();
 
 
 octopus.init();
+adminView.init();
 
 
